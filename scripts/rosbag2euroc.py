@@ -59,11 +59,18 @@ IMU_SENSOR_YAML = dict(
     accelerometer_random_walk= 3.0000e-3
 )
 
+# def get_rosbag_metadata(rosbag_path):
+#     assert(os.path.exists(rosbag_path))
+#     # This subprocess will only work if ROS is sourced...
+#     return yaml.load(subprocess.Popen(['rosbag', 'info', '--yaml', rosbag_path],
+#                                       stdout=subprocess.PIPE).communicate()[0])
+
 def get_rosbag_metadata(rosbag_path):
-    assert(os.path.exists(rosbag_path))
-    # This subprocess will only work if ROS is sourced...
-    return yaml.load(subprocess.Popen(['rosbag', 'info', '--yaml', rosbag_path],
-                                      stdout=subprocess.PIPE).communicate()[0])
+    process = subprocess.Popen(['rosbag', 'info', '--yaml', rosbag_path],
+                               stdout=subprocess.PIPE)
+    yaml_output = process.communicate()[0]
+    bag_metadata = yaml.safe_load(yaml_output)
+    return bag_metadata
 
 def mkdirs_without_exception(path):
     try:
@@ -188,7 +195,7 @@ def rosbag_2_euroc(rosbag_path, output_path):
                               str(msg.angular_velocity.z) + ',' +
                               str(msg.linear_acceleration.x) + ',' +
                               str(msg.linear_acceleration.y) + ',' +
-                              str(msg.linear_acceleration.z))
+                              str(msg.linear_acceleration.z) + '\n')
 
     # TODO(TONI): Consider adding Lidar msgs (sensor_msgs/PointCloud2)
     # TODO(TONI): parse tf_static or cam_info and create the sensor.yaml files?
